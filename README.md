@@ -8,18 +8,16 @@
 Microservice developed in Lumen for sending emails in real time or by queue.
 
 ## Current Features  
-- Send email in real time
-- Send email asynchronously 
-- Save email in database
-- Displays all emails saved in database
-- Delete emails saved in database
+- Get all categories
+- Get all products
+- Get featured products
+- Get product
 
 ## Upcoming Features
-- Send emails asynchronously with delay
-- Send multiples emails by request
+- Crud operations
 
 ## Documentation
-Please visit [Wiki documentation](https://github.com/rlacerda83/lumen-email-microservice/wiki) for more information.
+Please visit [Wiki documentation](https://github.com/rlacerda83/catalog-microservice/wiki) for more information.
 
 ## Contributing
 Contributions are welcome and will be fully credited. Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
