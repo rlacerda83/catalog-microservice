@@ -14,6 +14,12 @@ class Product extends BaseModel
 
     protected $table = 'product';
 
+    protected static $status = [
+        '0' => 'Inactive',
+        '1' => 'Active',
+        '2' => 'Removed'
+    ];
+
     protected $fillable = [
         'supplier_id',
         'name',

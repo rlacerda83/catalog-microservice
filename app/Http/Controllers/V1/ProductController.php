@@ -103,5 +103,24 @@ class ProductController extends BaseController
         return $this->response->item($product, new ProductDetailTransformer);
     }
 
+    /**
+     * @param $id
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function delete($id)
+    {
+        try {
+            $product = $this->repository->find($id);
+            if (! $product) {
+                throw new DeleteResourceFailedException('Product not found');
+            }
+            $this->repository->delete($id);
+            return $this->response->noContent();
+        } catch (\Exception $e) {
+            throw new DeleteResourceFailedException($e->getMessage());
+        }
+    }
+
 
 }

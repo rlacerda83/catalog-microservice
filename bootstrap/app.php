@@ -55,8 +55,6 @@ $app->singleton(
 |
 */
 
-$app->register(Iber\Generator\ModelGeneratorProvider::class);
-
 $app->register(Dingo\Api\Provider\LumenServiceProvider::class);
 
 app('Dingo\Api\Auth\Auth')->extend('static', function ($app) {

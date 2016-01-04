@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Eloquent;
 
+use App\Models\Product;
 use App\Models\Product\Sku;
 use Elocache\Repositories\Eloquent\AbstractRepository;
 use Illuminate\Http\Request;
@@ -130,5 +131,10 @@ class ProductRepository extends AbstractRepository
             {$filterSku}
 	        ORDER BY {$this->tableSkuImages}.order ASC
 	        LIMIT 1) as image");
+    }
+
+    public function delete(Product $product)
+    {
+        
     }
 }
