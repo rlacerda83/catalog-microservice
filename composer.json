@@ -1,7 +1,7 @@
 {
-    "name": "rlacerda83/service-email",
-    "description": "Microservice for sending e-mail",
-    "keywords": ["email", "microservice", "lumen", "laravel"],
+    "name": "rlacerda83/catalog-microservice",
+    "description": "Microservice catalog",
+    "keywords": ["catalog", "microservice", "lumen", "laravel", "products", "API", "categories"],
     "homepage": "http://github.com/rlacerda83/lumen-email-microservice",
     "type": "project",
     "license": "BSD",
@@ -17,9 +17,8 @@
         "illuminate/mail" : "5.*",
         "jeremeamia/superclosure": "~2.0",
         "dingo/api": "@dev",
-        "rlacerda83/query-parser": "@dev",
-        "rlacerda83/lumen-elocache": "@dev",
-        "ignasbernotas/laravel-model-generator": "^1"
+        "rlacerda83/query-parser": "dev-master",
+        "rlacerda83/lumem-elocache": "1.*"
     },
     "require-dev": {
         "phpunit/phpunit": "~4.0",

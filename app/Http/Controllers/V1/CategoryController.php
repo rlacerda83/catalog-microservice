@@ -41,4 +41,21 @@ class CategoryController extends BaseController
         }
     }
 
+    /**
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function getTree()
+    {
+        try {
+            $parentCategories = $this->repository->getTree();
+            foreach ($parentCategories as &$category) {
+                $category->children = $this->repository->getTree($category->id);
+            }
+
+            return $this->response->collection($parentCategories, new DefaultTransformer);
+        } catch (QueryParserException $e) {
+            throw new StoreResourceFailedException($e->getMessage(), $e->getFields());
+        }
+    }
+
 }

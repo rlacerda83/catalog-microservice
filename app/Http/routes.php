@@ -22,5 +22,5 @@ $api->version('v1', ['middleware' => 'api.auth', 'namespace' => 'App\Http\Contro
 
     // Categories
     $api->get('categories/', 'CategoryController@index');
-
+    $api->get('categories/tree', 'CategoryController@getTree');
 });
