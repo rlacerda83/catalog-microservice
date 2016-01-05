@@ -133,8 +133,4 @@ class ProductRepository extends AbstractRepository
 	        LIMIT 1) as image");
     }
 
-    public function delete(Product $product)
-    {
-        
-    }
 }
