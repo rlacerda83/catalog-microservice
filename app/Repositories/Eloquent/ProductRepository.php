@@ -13,7 +13,7 @@ use Validator;
 
 class ProductRepository extends AbstractRepository
 {
-    protected $enableCaching = false;
+    protected $enableCaching = true;
 
     protected $tableProducts;
     protected $tableSKu;
@@ -46,14 +46,32 @@ class ProductRepository extends AbstractRepository
         return 'App\Models\Product';
     }
 
+    public function getAllSkus(Product $product, $onlyActives = true)
+    {
+        $key = 'getAllSkus' . $product->id;
+        $fields = ["{$this->tableSku}.*"];
+        $query = $this->baseQuery();
+        $query->select($fields);
+
+        $query->where("{$this->tableProduct}.id", $product->id)
+            ->orderBy("{$this->tableSku}.order");
+
+        if ($onlyActives) {
+            $query->where("{$this->tableSku}.status", 1)
+                ->where("{$this->tableProduct}.status", 1);   
+        }
+
+        return $this->cacheQueryBuilder($key, $query);
+    }
+
     public function findBySku($idSku)
     {
-        $key = md5('findBySku' . $idSku);
-        $fields = '*';
+        $key = 'findBySku' . $idSku;
+        $fields = ["{$this->tableProduct}.*"];
 
         $query = $this->baseQuery($idSku);
         $query->select($fields);
-        $query->groupBy($this->tableProduct . '.id');
+        $query->groupBy("{$this->tableProduct}.id");
 
         return $this->cacheQueryBuilder($key, $query, 'first');
     }

@@ -79,28 +79,34 @@ class ProductController extends BaseController
      */
     public function getDetailsPage($idSKu)
     {
-        $product = Sku::findOrNew($idSKu)->product;
-        $skus = $product->sku;
-
-        $arrayVariations = [];
-        foreach ($skus as $sku)
-        {
-            $sku->images = $sku->images()->orderBy('order')->get();
-            $arrayVariations[$sku->id] = $this->skuRepository->getAttributes($sku->id)->toArray();
-
-            $items = array();
-            foreach ($arrayVariations[$sku->id] as $atributo) {
-                $items[] = $atributo['value'];
+        try {
+            $product = $this->repository->findBySku($idSKu);
+            if (! $product) {
+                throw new StoreResourceFailedException('Product not found');
             }
 
-            $sku->option = implode(' - ', $items);
-        }
+            $arrayProduct = $product->toArray();
+            $skus = $this->repository->getAllSkus($product)->toArray();
 
-        if (! $product) {
-            throw new StoreResourceFailedException('Product not found');
-        }
+            $arrayVariations = [];
+            foreach ($skus as &$sku)
+            {
+                $sku['images'] = $this->skuRepository->getImages($sku['id'])->toArray();
+                $arrayVariations[$sku['id']] = $this->skuRepository->getAttributes($sku['id'])->toArray();
 
-        return $this->response->item($product, new ProductDetailTransformer);
+                $items = array();
+                foreach ($arrayVariations[$sku['id']] as $atributo) {
+                    $items[] = $atributo['value'];
+                }
+
+                $sku['option'] = implode(' - ', $items);
+            }
+
+            $arrayProduct['skus'] = $skus;
+            return Response()->json(['data' => $arrayProduct]);
+        } catch (\Exception $e) {
+            throw new StoreResourceFailedException($e->getMessage());
+        }
     }
 
     /**

@@ -18,7 +18,7 @@ $api->version('v1', ['middleware' => 'api.auth', 'namespace' => 'App\Http\Contro
     // Products
     $api->get('products/', 'ProductController@index');
     $api->get('products/featureds', 'ProductController@getFeaturedProducts');
-    $api->get('products/{id}/details-page', 'ProductController@getDetailsPage');
+    $api->get('products/{idSku}/details-page', 'ProductController@getDetailsPage');
 
     // Categories
     $api->get('categories/', 'CategoryController@index');
