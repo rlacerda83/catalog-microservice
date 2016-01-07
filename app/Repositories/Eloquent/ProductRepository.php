@@ -3,6 +3,7 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\Product;
+use App\Models\Supplier;
 use App\Models\Product\Sku;
 use Elocache\Repositories\Eloquent\AbstractRepository;
 use Illuminate\Http\Request;
@@ -13,11 +14,12 @@ use Validator;
 
 class ProductRepository extends AbstractRepository
 {
-    protected $enableCaching = true;
+    protected $enableCaching = false;
 
     protected $tableProducts;
     protected $tableSKu;
     protected $tableSkuImages;
+    protected $tableSupplier;
 
 
     public static $rules = [
@@ -34,6 +36,7 @@ class ProductRepository extends AbstractRepository
         $this->tableProduct = $this->getModel()->getTableName();
         $this->tableSku = Sku::getTableName();
         $this->tableSkuImages = Sku\Image::getTableName();
+        $this->tableSupplier = Supplier::getTableName();
     }
 
     /**
@@ -67,7 +70,10 @@ class ProductRepository extends AbstractRepository
     public function findBySku($idSku)
     {
         $key = 'findBySku' . $idSku;
-        $fields = ["{$this->tableProduct}.*"];
+        $fields = [
+            "{$this->tableProduct}.*",
+            "{$this->tableSupplier}.name AS supplier"
+        ];
 
         $query = $this->baseQuery($idSku);
         $query->select($fields);
@@ -125,6 +131,7 @@ class ProductRepository extends AbstractRepository
     protected function baseQuery($idSku = null)
     {
         $query = $this->getModel()->newQuery();
+        $query->join($this->tableSupplier, "{$this->tableSupplier}.id", '=', "{$this->tableProduct}.supplier_id");
 
         $query->join($this->tableSku, function($join) use ($idSku)
         {

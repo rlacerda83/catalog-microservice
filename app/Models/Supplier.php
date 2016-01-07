@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 
 /**
  * Class Supplier
  */
-class Supplier extends Model
+class Supplier extends BaseModel
 {
 
     public $timestamps = false;
