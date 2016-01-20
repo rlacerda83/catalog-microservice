@@ -4,10 +4,12 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Product;
 use App\Models\Supplier;
+use App\Models\Category;
+use App\Models\Product\Category as ProductCategory;
 use App\Models\Product\Sku;
 use Elocache\Repositories\Eloquent\AbstractRepository;
 use Illuminate\Http\Request;
-use QueryParser\ParserRequest;
+use QueryParser\ParserRequestFactory;
 use Illuminate\Container\Container as App;
 use Illuminate\Support\Facades\DB;
 use Validator;
@@ -20,7 +22,8 @@ class ProductRepository extends AbstractRepository
     protected $tableSKu;
     protected $tableSkuImages;
     protected $tableSupplier;
-
+    protected $tableCategory;
+    protected $tableProductCategory;
 
     public static $rules = [
         'to' => 'required|email|max:150',
@@ -37,6 +40,8 @@ class ProductRepository extends AbstractRepository
         $this->tableSku = Sku::getTableName();
         $this->tableSkuImages = Sku\Image::getTableName();
         $this->tableSupplier = Supplier::getTableName();
+        $this->tableCategory = Category::getTableName();
+        $this->tableProductCategory = ProductCategory::getTableName();
     }
 
     /**
@@ -84,7 +89,7 @@ class ProductRepository extends AbstractRepository
 
     public function getFeatureds($limit = 6, $onlyActives = true)
     {
-        $key = md5('featureds' . $limit);
+        $key = 'featureds' . $limit;
 
         $fields = [
             "{$this->tableProduct}.id",
@@ -118,11 +123,18 @@ class ProductRepository extends AbstractRepository
      */
     public function findAllPaginate(Request $request, $itemsPage = 30)
     {
-        $key = md5($itemsPage.$request->getRequestUri());
+        $key = $itemsPage.$request->getRequestUri();
 
         $query = $this->baseQuery();
 
-        $queryParser = new ParserRequest($request, $this->getModel(), $query);
+        $fields = [
+            "{$this->tableProduct}.*",
+            //"{$this->tableSku}.*",
+        ];
+        $query->select($fields);
+
+        $queryParser = ParserRequestFactory::createParser($request, $this->getModel(), $query);
+        $queryParser->addTables(['product_sku']);
         $queryBuilder = $queryParser->parser();
 
         return $this->cacheQueryBuilder($key, $queryBuilder, 'paginate', $itemsPage);
@@ -130,8 +142,11 @@ class ProductRepository extends AbstractRepository
 
     protected function baseQuery($idSku = null)
     {
+
         $query = $this->getModel()->newQuery();
         $query->join($this->tableSupplier, "{$this->tableSupplier}.id", '=', "{$this->tableProduct}.supplier_id");
+        $query->join($this->tableProductCategory, "{$this->tableProduct}.id", '=', "{$this->tableProductCategory}.product_id");
+        $query->join($this->tableCategory, "{$this->tableCategory}.id", '=', "{$this->tableProductCategory}.category_id");
 
         $query->join($this->tableSku, function($join) use ($idSku)
         {

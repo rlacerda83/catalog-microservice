@@ -12,12 +12,6 @@ class ProductDetailTransformer extends TransformerAbstract
      */
     public function transform($object)
     {
-        $product = $object->toArray();
-//        foreach ($object->getImages() as $image)
-//        {
-//            $product['images'][] = $image;
-//        }
-
-        return $product;
+        return $object->toArray();
     }
 }

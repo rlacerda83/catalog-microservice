@@ -45,18 +45,9 @@ class ProductController extends BaseController
     public function index(Request $request)
     {
         try {
-            $arrayProducts = new Collection();
+            $paginator = $this->repository->findAllPaginate($request);
 
-            for ($i = 1; $i <= 10; $i++) {
-                $products = new \stdClass();
-                $products->id = $i;
-                $products->name = 'Mini Mim_' . $i;
-                $products->price = 50.00 + $i;
-                $products->img = "img{$i}.jpg";
-                $arrayProducts->push($products);
-            }
-
-            return $this->response->collection($arrayProducts, new DefaultTransformer);
+            return $this->response->paginator($paginator, new DefaultTransformer);
         } catch (QueryParserException $e) {
             throw new StoreResourceFailedException($e->getMessage(), $e->getFields());
         }
