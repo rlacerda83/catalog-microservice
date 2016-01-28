@@ -129,12 +129,15 @@ class ProductRepository extends AbstractRepository
 
         $fields = [
             "{$this->tableProduct}.*",
-            //"{$this->tableSku}.*",
+            "{$this->tableSku}.*",
+            $this->getImage()
         ];
         $query->select($fields);
+        $query->where("{$this->tableSku}.showcase", 1);
+        $query->groupBy("{$this->tableProduct}.id");
 
         $queryParser = ParserRequestFactory::createParser($request, $this->getModel(), $query);
-        $queryParser->addTables(['product_sku']);
+        $queryParser->addTables(['product_sku', 'category']);
         $queryBuilder = $queryParser->parser();
 
         return $this->cacheQueryBuilder($key, $queryBuilder, 'paginate', $itemsPage);
