@@ -92,9 +92,7 @@ class ProductRepository extends AbstractRepository
         $key = sprintf('featureds_%s', $limit);
 
         $fields = [
-            "{$this->tableProduct}.id",
-            "{$this->tableProduct}.name",
-            "{$this->tableProduct}.description"
+            "{$this->tableProduct}.*"
         ];
 
         $query = $this->baseQuery();

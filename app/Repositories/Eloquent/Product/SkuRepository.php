@@ -1,18 +1,17 @@
 <?php
 
-namespace App\Repositories\Eloquent;
+namespace App\Repositories\Eloquent\Product;
 
 use App\Models\Product;
 use App\Models\Product\Sku;
 use App\Models\Variation;
 use Elocache\Repositories\Eloquent\AbstractRepository;
 use Illuminate\Http\Request;
-use QueryParser\ParserRequest;
 use Illuminate\Container\Container as App;
 use Illuminate\Support\Facades\DB;
 use Validator;
 
-class ProductSkuRepository extends AbstractRepository
+class SkuRepository extends AbstractRepository
 {
 
     protected $tableProduct;

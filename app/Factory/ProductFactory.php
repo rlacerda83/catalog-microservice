@@ -4,38 +4,40 @@ namespace App\Factory;
 
 use App\Models\Product;
 use App\Repositories\Eloquent\ProductRepository;
-use App\Repositories\Eloquent\ProductSkuRepository;
+use App\Repositories\Eloquent\SupplierRepository;
+use App\Factory\Product\SkuFactory;
 use Illuminate\Support\Facades\App;
 
 class ProductFactory
 {
 
-    public static function injectData($product)
+    protected $productRepository;
+
+    protected $skuFactory;
+
+    protected $supplierRepository;
+
+
+    public function __construct()
     {
         $app = App::getFacadeApplication();
-        $productRepository = new ProductRepository($app);
-        $skuRepository = new ProductSkuRepository($app);
+        $this->supplierRepository = new SupplierRepository($app);   
+        $this->productRepository = new ProductRepository($app);
+        $this->skuFactory = new SkuFactory();
+    }
 
-        $skus = $productRepository->getAllSkus($product);
+    public function injectData($product)
+    {
+        
+        $product->supplier = $this->supplierRepository->find($product->supplier_id);
+        unset($product->supplier_id);
+
+        $skus = $this->productRepository->getAllSkus($product);
         if (! count($skus)) {
             throw new \Exception( sprintf('No skus found to product', $product->id) );
         }
 
-        $arrayVariations = [];
-        foreach ($skus as &$sku)
-        {
-            $sku->images = $skuRepository->getImages($sku->id);
-            $arrayVariations[$sku->id] = $skuRepository->getAttributes($sku->id);
-
-            $items = array();
-            foreach ($arrayVariations[$sku->id] as $attribute) {
-                $items[] = $attribute->value;
-            }
-
-            $sku->option = implode(' - ', $items);
-        }
-
-        $product->skus = $skus;
+        $product->skus = $this->skuFactory->injectData($skus);
 
         return $product;
     }

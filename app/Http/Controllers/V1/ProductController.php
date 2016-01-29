@@ -5,7 +5,6 @@ namespace App\Http\Controllers\V1;
 use App\Factory\ProductFactory;
 use App\Models\Product\Sku;
 use App\Repositories\Eloquent\ProductRepository;
-use App\Repositories\Eloquent\ProductSkuRepository;
 use App\Transformers\DefaultTransformer;
 use Illuminate\Http\Request;
 use Dingo\Api\Routing\Helpers;
@@ -23,18 +22,15 @@ class ProductController extends BaseController
      */
     private $repository;
 
-    /**
-     * @var ProductSkuRepository
-     */
-    private $skuRepository;
+    private $productFactory;
 
     /**
      * @param ProductRepository $repository
      */
-    public function __construct(ProductRepository $repository, ProductSkuRepository $skuRepository)
+    public function __construct(ProductRepository $repository, ProductFactory $productFactory)
     {
         $this->repository = $repository;
-        $this->skuRepository = $skuRepository;
+        $this->productFactory = $productFactory;
     }
 
     /**
@@ -46,7 +42,7 @@ class ProductController extends BaseController
         try {
             $paginator = $this->repository->findAllActivesPaginate($request);
             foreach ($paginator as $product) {
-                ProductFactory::injectData($product);
+                $this->productFactory->injectData($product);
             }
 
             return $this->response->paginator($paginator, new DefaultTransformer);
@@ -61,7 +57,7 @@ class ProductController extends BaseController
             $products = $this->repository->getFeatureds($request->get('limit'));
 
             foreach ($products as $product) {
-                ProductFactory::injectData($product);
+                $this->productFactory->injectData($product);
             }
 
             return $this->response->collection($products, new DefaultTransformer);
@@ -82,7 +78,7 @@ class ProductController extends BaseController
                 throw new StoreResourceFailedException('Product not found');
             }
 
-            ProductFactory::injectData($product);
+            $this->productFactory->injectData($product);
 
             return $this->response->item($product, new DefaultTransformer);
         } catch (\Exception $e) {
@@ -108,6 +104,5 @@ class ProductController extends BaseController
             throw new DeleteResourceFailedException($e->getMessage());
         }
     }
-
 
 }
