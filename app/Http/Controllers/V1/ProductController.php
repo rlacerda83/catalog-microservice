@@ -2,17 +2,15 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Factory\ProductFactory;
 use App\Models\Product\Sku;
 use App\Repositories\Eloquent\ProductRepository;
 use App\Repositories\Eloquent\ProductSkuRepository;
 use App\Transformers\DefaultTransformer;
-use App\Transformers\ProductDetailTransformer;
 use Illuminate\Http\Request;
 use Dingo\Api\Routing\Helpers;
 use Dingo\Api\Exception\StoreResourceFailedException;
 use Dingo\Api\Exception\DeleteResourceFailedException;
-use Illuminate\Http\Response;
-use Illuminate\Support\Collection;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use QueryParser\QueryParserException;
 
@@ -40,12 +38,16 @@ class ProductController extends BaseController
     }
 
     /**
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param Request $request
+     * @return \Dingo\Api\Http\Response
      */
-    public function index(Request $request)
+    public function getAllActives(Request $request)
     {
         try {
-            $paginator = $this->repository->findAllPaginate($request);
+            $paginator = $this->repository->findAllActivesPaginate($request);
+            foreach ($paginator as $product) {
+                ProductFactory::injectData($product);
+            }
 
             return $this->response->paginator($paginator, new DefaultTransformer);
         } catch (QueryParserException $e) {
@@ -57,6 +59,10 @@ class ProductController extends BaseController
     {
         try {
             $products = $this->repository->getFeatureds($request->get('limit'));
+
+            foreach ($products as $product) {
+                ProductFactory::injectData($product);
+            }
 
             return $this->response->collection($products, new DefaultTransformer);
         } catch (QueryParserException $e) {
@@ -76,25 +82,9 @@ class ProductController extends BaseController
                 throw new StoreResourceFailedException('Product not found');
             }
 
-            $arrayProduct = $product->toArray();
-            $skus = $this->repository->getAllSkus($product)->toArray();
+            ProductFactory::injectData($product);
 
-            $arrayVariations = [];
-            foreach ($skus as &$sku)
-            {
-                $sku['images'] = $this->skuRepository->getImages($sku['id'])->toArray();
-                $arrayVariations[$sku['id']] = $this->skuRepository->getAttributes($sku['id'])->toArray();
-
-                $items = array();
-                foreach ($arrayVariations[$sku['id']] as $atributo) {
-                    $items[] = $atributo['value'];
-                }
-
-                $sku['option'] = implode(' - ', $items);
-            }
-
-            $arrayProduct['skus'] = $skus;
-            return Response()->json(['data' => $arrayProduct]);
+            return $this->response->item($product, new DefaultTransformer);
         } catch (\Exception $e) {
             throw new StoreResourceFailedException($e->getMessage());
         }

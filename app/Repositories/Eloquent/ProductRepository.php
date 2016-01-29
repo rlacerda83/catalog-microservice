@@ -11,7 +11,6 @@ use Elocache\Repositories\Eloquent\AbstractRepository;
 use Illuminate\Http\Request;
 use QueryParser\ParserRequestFactory;
 use Illuminate\Container\Container as App;
-use Illuminate\Support\Facades\DB;
 use Validator;
 
 class ProductRepository extends AbstractRepository
@@ -26,11 +25,9 @@ class ProductRepository extends AbstractRepository
     protected $tableProductCategory;
 
     public static $rules = [
-        'to' => 'required|email|max:150',
-        'subject' => 'required|max:255',
-        'reply_to' => 'email|max:150',
-        'from' => 'email|max:150',
-        'html' => 'required',
+        'name' => 'required|max:150',
+        'description' => 'required',
+        'status' => 'email|max:150'
     ];
 
     public function __construct(App $app)
@@ -56,8 +53,10 @@ class ProductRepository extends AbstractRepository
 
     public function getAllSkus(Product $product, $onlyActives = true)
     {
-        $key = 'getAllSkus' . $product->id;
+        $key = sprintf('getAllSku_%s', $product->id);
+
         $fields = ["{$this->tableSku}.*"];
+
         $query = $this->baseQuery();
         $query->select($fields);
 
@@ -74,7 +73,8 @@ class ProductRepository extends AbstractRepository
 
     public function findBySku($idSku)
     {
-        $key = 'findBySku' . $idSku;
+        $key = sprintf('findBySku%s', $idSku);
+
         $fields = [
             "{$this->tableProduct}.*",
             "{$this->tableSupplier}.name AS supplier"
@@ -89,15 +89,12 @@ class ProductRepository extends AbstractRepository
 
     public function getFeatureds($limit = 6, $onlyActives = true)
     {
-        $key = 'featureds' . $limit;
+        $key = sprintf('featureds_%s', $limit);
 
         $fields = [
             "{$this->tableProduct}.id",
-            "{$this->tableSku}.id as sku_id",
             "{$this->tableProduct}.name",
-            "{$this->tableProduct}.description",
-            "{$this->tableSku}.price",
-            $this->getImage()
+            "{$this->tableProduct}.description"
         ];
 
         $query = $this->baseQuery();
@@ -121,19 +118,17 @@ class ProductRepository extends AbstractRepository
      * @param int $itemsPage
      * @return mixed
      */
-    public function findAllPaginate(Request $request, $itemsPage = 30)
+    public function findAllActivesPaginate(Request $request, $itemsPage = 30)
     {
-        $key = $itemsPage.$request->getRequestUri();
-
-        $query = $this->baseQuery();
+        $key = sprintf('product_paginate_%s_%s', $itemsPage, $request->getRequestUri());
 
         $fields = [
-            "{$this->tableProduct}.*",
-            "{$this->tableSku}.*",
-            $this->getImage()
+            "{$this->tableProduct}.*"
         ];
+
+        $query = $this->baseQuery();
         $query->select($fields);
-        $query->where("{$this->tableSku}.showcase", 1);
+        $query->where("{$this->tableProduct}.status", 1);
         $query->groupBy("{$this->tableProduct}.id");
 
         $queryParser = ParserRequestFactory::createParser($request, $this->getModel(), $query);
@@ -145,7 +140,6 @@ class ProductRepository extends AbstractRepository
 
     protected function baseQuery($idSku = null)
     {
-
         $query = $this->getModel()->newQuery();
         $query->join($this->tableSupplier, "{$this->tableSupplier}.id", '=', "{$this->tableProduct}.supplier_id");
         $query->join($this->tableProductCategory, "{$this->tableProduct}.id", '=', "{$this->tableProductCategory}.product_id");
@@ -160,20 +154,6 @@ class ProductRepository extends AbstractRepository
         });
 
         return $query;
-    }
-
-    protected function getImage($idSku = null)
-    {
-        $filterSku = '';
-        if ($idSku) {
-            $filterSku = " AND {$this->tableSkuImages}.sku_id = $idSku";
-        }
-
-        return DB::raw("(SELECT {$this->tableSkuImages}.image FROM {$this->tableSkuImages}
-            WHERE {$this->tableSkuImages}.sku_id = {$this->tableSku}.id
-            {$filterSku}
-	        ORDER BY {$this->tableSkuImages}.order ASC
-	        LIMIT 1) as image");
     }
 
 }

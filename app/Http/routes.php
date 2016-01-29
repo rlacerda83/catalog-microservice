@@ -16,7 +16,7 @@ $api = app('Dingo\Api\Routing\Router');
 $api->version('v1', ['middleware' => 'api.auth', 'namespace' => 'App\Http\Controllers\V1'], function ($api) {
 
     // Products
-    $api->get('products/', 'ProductController@index');
+    $api->get('products/', 'ProductController@getAllActives');
     $api->get('products/featureds', 'ProductController@getFeaturedProducts');
     $api->get('products/{idSku}/details-page', 'ProductController@getDetailsPage');
 
